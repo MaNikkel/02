@@ -23,28 +23,37 @@ const CartContext = createContext<CartContextData>({} as CartContextData);
 
 export function CartProvider({ children }: CartProviderProps): JSX.Element {
   const [cart, setCart] = useState<Product[]>(() => {
-    // const storagedCart = Buscar dados do localStorage
+    const storagedCart = localStorage.getItem('cart-items')
 
-    // if (storagedCart) {
-    //   return JSON.parse(storagedCart);
-    // }
+    if (storagedCart) {
+      return JSON.parse(storagedCart);
+    }
 
     return [];
   });
 
   const addProduct = async (productId: number) => {
     try {
-      // TODO
+      const { data: { id, title, price, image } } = await api.get(`/products/${productId}`)
+      const index = cart.findIndex(cart => cart.id === productId)
+      if (index >= 0) {
+        const newCart = cart
+        newCart[index].amount += 1
+        setCart([...newCart])
+      } else {
+        setCart([ ...cart, { amount: 1, id, image, price, title } ])
+      }
     } catch {
-      // TODO
+      toast('Erro')
     }
   };
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
+      const newCart = cart.filter(cart => cart.id !== productId)
+      setCart(newCart)
     } catch {
-      // TODO
+      toast('Erro')
     }
   };
 
@@ -53,9 +62,12 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      // TODO
+      const index = cart.findIndex(cart => cart.id === productId)
+      const newCart = cart
+      newCart[index].amount += amount
+      setCart([...newCart])
     } catch {
-      // TODO
+      toast('Erro')
     }
   };
 
